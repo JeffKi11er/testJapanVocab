@@ -1,0 +1,28 @@
+_swapGems(row1, col1, row2, col2, swapBack = true) {
+    const movements = this.match3.swapItems(row1, col1, row2, col2);
+    this.swappingGems = 2;
+    this._canPick = false;
+    movements.forEach((movement) => {
+      const block = this.match3.customDataOf(movement.row, movement.column);
+      createjs.Tween.get(block.shape).to(
+        {
+          x: block.shape.x + this._blockWidth * movement.deltaColumn,
+          y: block.shape.y + this._blockHeight * movement.deltaRow,
+        }, this._setting.gemSwapSpeed, createjs.Ease.sineInOut,
+      )
+        .call(() => {
+          this.swappingGems -= 1;
+          if (this.swappingGems === 0) {x
+            if (!this.match3.matchInBoard()) {
+              if (swapBack) {
+                this._swapGems(row1, col1, row2, col2, false);
+              } else {
+                this._canPick = true;
+              }
+            } else {
+              this._handleMatches();
+            }
+          }
+        });
+    });
+  }

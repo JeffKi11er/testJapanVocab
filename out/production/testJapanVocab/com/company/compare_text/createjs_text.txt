@@ -1,0 +1,380 @@
+var stage;
+var container;
+var queue;
+var match_3_center;
+var array_in_removing;
+var canPick;
+var dragging;
+var selected_gem;
+var score;
+var combo;
+var int_red;
+var int_blue;
+var int_green;
+var int_yellow;
+var packet;
+var index;
+var limit;
+var target_;
+var flag_reset;
+var isPlay;
+var hand_point;
+var arrange_unfit;
+const board ={
+	fall_speed : 100,
+	destroy_speed : 1000,
+	swap_speed : 200,
+	x : 50,
+	y : 50,
+	_gem_width : 70,
+	_gem_height : 70,
+}
+const rule = {
+	limited : 8,
+	match_request : [10,15,20,25],
+}
+const kingdom = {
+	RED : 0,
+	BLUE : 1,
+	GREEN : 2,
+	YELLOW : 3,
+}
+var mission_bar;
+var manifest = [
+	{"src":"assest/0.png","id":"type_0"},
+	{"src":"assest/1.png","id":"type_1"},
+	{"src":"assest/2.png","id":"type_2"},
+	{"src":"assest/3.png","id":"type_3"},
+	{"src":"assest/4.png","id":"type_4"},
+	{"src":"assest/5.png","id":"type_5"},
+	{"src":"assest/6.png","id":"type_6"},
+	{"src":"assest/7.png","id":"type_7"},
+	{"src":"assest/8.png","id":"type_8"}
+]
+function init(){
+	stage = new createjs.Stage("game_canvas");
+	stage.enableMouseOver();
+	createjs.Touch.enable(stage);
+	createjs.Ticker.framerate = 30;
+	createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
+	queue = new createjs.LoadQueue(true);
+	queue.addEventListener("complete",handleComplete);
+	queue.loadManifest(manifest,true,"/diamond/lib/");
+}
+function handleComplete(){
+	flag_choice = false;
+	createjs.Ticker.addEventListener("tick",tick);
+	isPlay = true;
+	generatingScreen();
+}
+function generatingScreen(){
+	combo = 0;
+	score = 0;
+	int_red = 0;
+	int_blue = 0;
+	int_green = 0;
+	int_yellow = 0;
+	flag_reset = true;
+	establishRequest();
+	match_3_center = new Match3({
+		rows : 7,
+		columns : 7,
+		items : 4,
+	});
+	canPick = true;
+    dragging = false;
+	match_3_center.generateField();
+	drawBoard();
+}
+function establishRequest(){
+	limit = rule.limited;
+	mission_bar =  Math.floor(Math.random() * rule.match_request.length);
+	target_ = {
+		progress : 0,
+		target_kingdom : Math.floor(Math.random() * 4),
+	};
+	switch(target_.target_kingdom){
+		case kingdom.RED:
+			console.log(`[REQUEST] : ${rule.match_request[mission_bar]} red kingdom`);
+			break;
+		case kingdom.BLUE:
+			console.log(`[REQUEST] : ${rule.match_request[mission_bar]} blue kingdom`);
+			break;
+		case kingdom.GREEN:
+			console.log(`[REQUEST] : ${rule.match_request[mission_bar]} green kingdom`);
+			break;
+		case kingdom.YELLOW:
+			console.log(`[REQUEST] : ${rule.match_request[mission_bar]} yellow kingdom`);
+			break;
+		default:
+			break;
+	}
+}
+function gainProgress(){
+	switch(target_.target_kingdom){
+		case kingdom.RED:
+			target_.progress+=int_red;
+			break;
+		case kingdom.BLUE:
+			target_.progress+=int_blue;
+			break;
+		case kingdom.GREEN:
+			target_.progress+=int_green;
+			break;
+		case kingdom.YELLOW:
+			target_.progress+=int_yellow;
+			break;
+		default:
+			break;
+	}
+}
+function checkFlag(){
+	console.log(`chance : ${limit}`);
+	console.log(`did : ${target_.progress} | need : ${rule.match_request[mission_bar]}`);
+	if(limit<=0 && target_.progress<rule.match_request[mission_bar]){
+		console.log("You are failed !");
+		isPlay = false;
+	}else{
+		if(target_.progress>=rule.match_request[mission_bar]){
+			console.log("Enemy was defeated ! It's your colony now");
+			establishRequest();
+		}
+	}
+}
+function tick(){
+	stage.update(event);
+}
+function drawBoard(array_match_data){
+	selected_gem = null;
+	array_in_removing = [];
+	container = new createjs.Container();
+	container.x = 0;
+	container.y = 0;
+	hand_point = new createjs.Shape();
+	hand_point.graphics.beginFill("#6d1b7b").drawCircle(0,0,2);
+	hand_point.x = 0;
+	hand_point.y = 0;
+	hand_point.visible = false
+	container.on('mousedown',(event)=>{
+		if(!canPick || !isPlay){
+			return;
+		}
+		var col = Math.floor((event.stageX-board.x)/board._gem_width);
+		var row = Math.floor((event.stageY-board.y)/board._gem_height);
+		if(match_3_center.validPick(row,col)){
+			event.target.alpha = 0.75;
+			selected_gem = match_3_center.getSelectedItem();
+			if(!selected_gem){
+              match_3_center.setSelectedItem(row, col);
+      }else{
+      	console.log(`already : ${match_3_center.getSelectedItem()}`);
+      }
+		}else{
+			console.log("Invalid picked");
+		}
+	});
+	container.on('pressmove',(event)=>{
+		hand_point.visible = true;
+		var localInside = container.globalToLocal(event.stageX, event.stageY);
+		hand_point.x = localInside.x;
+		hand_point.y = localInside.y;
+		var gems = container.children.filter((child)=>child.index !== container.getChildIndex(hand_point));
+		gems.forEach((item,index,array)=>{
+			if(checkInsert(item.x,item.y,board._gem_width,board._gem_height,hand_point.x,hand_point.y,5,5)){
+				var col = Math.floor((event.stageX-board.x)/board._gem_width);
+				var row = Math.floor((event.stageY-board.y)/board._gem_height);
+				if(match_3_center.validPick(row,col)){
+					console.log(match_3_center.isPartOfMatchGame(row,col));
+				}
+			}
+		});
+	});
+	container.on('pressup',(event)=>{
+		hand_point.visible = false;
+	// 	var col = Math.floor((event.stageX-board.x)/board._gem_width);
+	// 	var row = Math.floor((event.stageY-board.y)/board._gem_height);
+	// 	if(match_3_center.validPick(row,col)){
+	// 		event.target.alpha = 0.75;
+	// 		selected_gem = match_3_center.getSelectedItem();
+	// 		if(match_3_center.areTheSame(row,col,selected_gem.row,selected_gem.column)){
+	//             match_3_center.deleselectItem();
+	//         }else if(match_3_center.areNext(row,col,selected_gem.row,selected_gem.column)){
+	//             match_3_center.deleselectItem();
+	//             swapping(row, col, selected_gem.row, selected_gem.column, true);
+	//         }else{
+	            match_3_center.deleselectItem();
+	//         }
+	//         createjs.Tween.get(container).wait(500).call(()=>{
+ //            	event.target.alpha = 1;
+ //            });
+	// 	}
+	});
+	packet = new Packet(3*board.x  ,stage.canvas.height - 150);
+	packet.setUpPacket(container);
+	for(var i = 0; i< match_3_center.getRows(); i++){
+		for(var j = 0; j < match_3_center.getColumns(); j++){
+			if(j%2!==0){
+				arrange_unfit = board._gem_height/2;
+			}else{
+				arrange_unfit = 0;
+			}
+			var gem = new Gem(board.x + j*board._gem_width,board.y+ i*board._gem_height,board._gem_width,board._gem_height,
+				match_3_center.valueAt(i,j));
+			if(index!==null&&index!==undefined){
+				gem.setUpGem(container,index);
+			}else{
+				gem.setUpGem(container,container.getChildIndex(container.getChildByName("packet")));
+			}
+			index = container.getChildIndex(gem.container);
+			match_3_center.setCustomData(i,j,gem);
+		}
+	}
+	container.addChild(hand_point);
+	stage.addChild(container);
+	console.log(match_3_center.gameArray);
+}
+function checkInsert(obj_1_x, obj_1_y, obj_1_width, obj_1_height,
+	obj_2_x, obj_2_y, obj_2_width, obj_2_height){
+	if(obj_1_x + obj_1_width > obj_2_x && obj_1_x < obj_2_x + obj_2_width &&
+			obj_1_y + obj_1_height > obj_2_y && obj_2_height + obj_2_y > obj_1_y){
+			return true;
+		}else{
+			return false;
+		}
+}
+function swapping(row,col,row_2,col_2,isSwapBack=true){
+	var items_in_swap = match_3_center.swapItems(row,col,row_2,col_2);
+	var swappingCount = 2;
+	canPick = false;
+	items_in_swap.forEach((item,index,array)=>{
+		var swap_item = match_3_center.customDataOf(item.row,item.column);
+		createjs.Tween.get(swap_item.container).to({
+			x : swap_item.container.x + board._gem_width*item.deltaColumn,
+			y : swap_item.container.y + board._gem_height*item.deltaRow,
+		},board.swap_speed,createjs.Ease.sineInOut).call(()=>{
+			swappingCount -= 1;
+			if(swappingCount === 0){
+				if(!match_3_center.matchInBoard()){
+					if(isSwapBack){
+						swapping(row,col,row_2,col_2,false);
+					}else{
+						canPick = true;
+					}
+				}else{
+					handleMatches();
+				}
+			}
+		});
+	});
+}
+function defineColor(array_match){
+	array_match.forEach((item,index,array)=>{
+		switch(match_3_center.valueAt(item.row,item.column)){
+			case kingdom.RED:
+				int_red ++;
+				break;
+			case kingdom.BLUE:
+				int_blue++;
+				break;
+			case kingdom.GREEN:
+				int_green++;
+				break;
+			case kingdom.YELLOW:
+				int_yellow++;
+				break;
+			default:
+				break;
+		}
+	container.addChild(match_3_center.customDataOf(item.row,item.column).container);
+	});
+}
+function handleMatches(){
+	var gem_in_remove = match_3_center.getMatchList();
+	defineColor(gem_in_remove);
+	scoreCalculate(gem_in_remove.length);
+	var destroyed = 0;
+	gem_in_remove.forEach((item,index,array)=>{
+		var deleting_gem = match_3_center.customDataOf(item.row,item.column);
+		array_in_removing.push(deleting_gem);
+		destroyed ++;
+		createjs.Tween.get(deleting_gem.container).to({
+			x : packet.x + 100 ,y : packet.y+50, scale : 0
+		},board.destroy_speed,createjs.Ease.sineInOut).call(()=>{
+			destroyed --;
+			if(destroyed===0){
+				container.removeChild(deleting_gem.container);
+				createjs.Tween.get(container).wait(550).call(()=>{
+					fallAndReBuild();
+				});
+			}
+		});
+	});
+}
+function fallAndReBuild(){
+	var moving_gem = 0;
+	match_3_center.removeMatches();
+    const timeline = new createjs.Timeline({
+      paused: true,
+      onComplete: () => {
+        movingFinish();
+      },
+    });
+	var board_rebuild = match_3_center.arrangeBoardAfterMatch();
+	board_rebuild.forEach((item,index,array)=>{
+		moving_gem++;
+		var fall_item = match_3_center.customDataOf(item.row,item.column);
+		createjs.Tween.get(fall_item.container).to({
+			y: fall_item.container.y + item.deltaRow * board._gem_width},
+				board.fall_speed*Math.abs(item.deltaRow)).call(()=>{
+			moving_gem--;
+			if(moving_gem === 0){
+				movingFinish();
+			}
+		});
+	});
+	var replenish = match_3_center.replenishBoard();
+	replenish.forEach((item,index,array)=>{
+		moving_gem++;
+		if(item.column % 2!==0){
+			arrange_unfit = board._gem_height/2;
+		}else{
+			arrange_unfit = 0;
+		}
+		var gem = new Gem(board.x + board._gem_width * item.column,board.y + board._gem_height * (item.row - item.deltaRow + 1),board._gem_width,board._gem_height,match_3_center.valueAt(item.row,item.column));
+		gem.setUpGem(container,index);
+		match_3_center.setCustomData(item.row,item.column,gem);
+		createjs.Tween.get(gem.container).to({y : board.y + board._gem_height * item.row},
+			board.fall_speed * item.deltaRow).call(()=>{
+				moving_gem--;
+				if(moving_gem === 0){
+					movingFinish();
+				}
+			});
+	});
+}
+function movingFinish(){
+	if(match_3_center.matchInBoard()){
+		createjs.Tween.get(container).wait(400).call(()=>{
+			handleMatches();
+			combo += 1;
+			console.log(`Combo : ${combo}`);
+		});
+	}else{
+		canPick = true;
+		selected_gem = null;
+		combo = 0;
+		console.log(`RED : ${int_red} | BLUE : ${int_blue} | GREEN : ${int_green} | YELLOW : ${int_yellow}`);
+		console.log(`Score : ${score}`);
+		gainProgress();
+		createjs.Tween.get(container).wait(500).call(()=>{
+			int_red = 0;
+			int_blue = 0;
+			int_yellow = 0;
+			int_green = 0;
+		});
+		checkFlag();
+	}
+}
+function scoreCalculate(gem_number){
+	score += gem_number + combo*3;
+}
