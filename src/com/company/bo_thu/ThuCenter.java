@@ -25,7 +25,7 @@ public class ThuCenter {
         }while (!pre_request.equals("p")&&!pre_request.equals("s"));
         if(pre_request.equals("p")){
             ClearConsole();
-            System.out.println("Which set you wanna play  ? [1]/[2]/[3]/[4]/[5]/[6]/[7]/[8]/[9]/[10]/[11]/[12] any key for overall test");
+            System.out.println("Which set you wanna play  ? [1]/[2]/[3]/[4]/[5]/[6]/[7]/[8]/[9]/[10]/[11]/[12]/[13]/usual any key for overall test");
             String request = (new Scanner(System.in).nextLine());
             if(request.trim().equals("1")){
                 thus = dataKanji.NihonGrade1();
@@ -51,6 +51,10 @@ public class ThuCenter {
                 thus = dataKanji.Nihongrade11();
             }else if(request.trim().equals("12")){
                 thus = dataKanji.Nihongrade12();
+            }else if(request.trim().equals("13")){
+                thus = dataKanji.NihonGrade13();
+            }else if(request.trim().equals("14")){
+                thus = dataKanji.Usual();
             }
             else {
                 thus = dataKanji.NihonAllGrade();

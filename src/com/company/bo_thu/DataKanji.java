@@ -360,6 +360,39 @@ public class DataKanji {
                 "bên trong là hàm răng hô",null);
         return thus;
     }
+    public ArrayList<Thu>Usual(){
+        ArrayList<Thu>thus = new ArrayList<>();
+        ArrayList<Thu>thuVat = new ArrayList<>();
+        setUpThus(thuVat,"Bao", "勹", false, null, "bao bọc", "giống hình cái bao túi có khóa kéo ở đầu",null);
+        setUpThus(thus,"Vật","勿",true,null,"chớ đừng","được kết hợp bởi chữ " +
+                "bao [勹] nghĩa là cái bao và chữ phiệt [丿], nghĩa là chớ nên mua đồ phiệt",thuVat);
+        ArrayList<Thu>thuDoc = new ArrayList<>();
+        ArrayList<Thu>thuMai = new ArrayList<>();
+        setUpThus(thuMai,"Sĩ","士",false,null,"học trò, sĩ quan","có nét giống chữ thổ [土] nghĩa là đất nhưng ngược lại và có hình " +
+                "người dang tay (nét trên nhỏ, nét dưới dài hơn), trong bàn cờ tướng, quân sĩ là nền móng các quân tướng, vị trí cũng gần tướng nhất",null);
+        setUpThus(thuDoc,"売","Mại",true,null,"thương mại","được cấu thành từ chữ sĩ [士] nghĩa là kẻ sĩ," +
+                "người học thức và chữ có nét giống chữ củng [廾] có nghĩa là chắp tay, mang hàm ý nghĩa một người giao dịch giỏi giang là biết khiêm nhường",thuMai);
+        setUpThus(thuDoc,"Ngôn","言",false,null,"ngôn từ, lời nói","được tạo bởi chữ đầu [亠], chữ nhị [二] và chữ khẩu [口] nghĩa là miệng, ý muốn nói khi ai đó nói gì, hiểu được 2 câu đầu là hiểu được mục đích lời nói của họ",null);
+        setUpThus(thus,"Độc","読",true,null,"độc giả","được cấu thành bởi chữ ngôn [言] và chữ mại [言], mang ý nghĩa " +
+                "một người đọc giả là một vị khách hàng lắng nghe những ngôn từ của người viết ",thuDoc);
+        ArrayList<Thu>thuTHoai = new ArrayList<>();
+        setUpThus(thuTHoai,"Ngôn","言",false,null,"ngôn từ, lời nói","được tạo bởi chữ đầu [亠], chữ nhị [二] và chữ khẩu [口] nghĩa là miệng, ý muốn nói khi ai đó nói gì, hiểu được 2 câu đầu là hiểu được mục đích lời nói của họ",null);
+        setUpThus(thuTHoai,"Thiệt","舌",false,null,"lưỡi","có bao gồm chữ khẩu [口] là miệng, ngoài ra có nét vẽ hình người phía trên làm ta liên tưởng đến " +
+                "một người dang hai tay ra chịu thiệt vì miệng lưỡi vạ lây",null);
+        setUpThus(thus,"Thoại","話",true,null,"lời nói","được cấu thành từ chữ ngôn [言] có nghĩa là ngôn từ và chữ thiệt [舌] có nghĩa là lưỡi, muốn nói rằng muốn nói ra lời nào đều có " +
+                "trong đầu cách suy nghĩ của ngôn từ và cuối cùng thốt ra bằng miệng lưỡi",thuTHoai);
+        ArrayList<Thu>thuHoi = new ArrayList<>();
+        setUpThus(thuHoi,"Nhân","人", false, "亻", "người", "có 2 chân giống như chân người",null);
+        ArrayList<Thu>thuVan = new ArrayList<>();
+        setUpThus(thuVan,"Nhị","二",false,null,"số 2","nhìn giống 2 que củi, tương đương với số lượng là con số 2",null);
+        setUpThus(thuVan,"Khư","厶",false,null,"riêng tư",
+                "có nét thuộc bộ phận của chữ Bưu [髟] nghĩa là tóc dài, ý nghĩa là người này muốn giữ mái tóc dài cho riêng mình",null);
+        setUpThus(thuHoi,"Vân","云",true,null,"rằng, vân vân","được cấu thành từ chữ nhị [二] là số 2 và chữ khư [厶] nghĩa là riêng mình," +
+                "ý muốn nói rằng người nào mà luôn thủ sẵn một đôi đồ vật cho riêng thì đồ sẽ vô kể",thuVan);
+        setUpThus(thus,"Hội","会",true,null,"chỗ đông người, hội họp","được cấu thành bởi chữ nhân [人] nghĩa là người và chữ vân [云] nghĩa là vân vân, nhiều," +
+                "mang hàm ý chỉ một nơi đông đúc như đang họp",thuHoi);
+        return thus;
+    }
     public ArrayList<Thu>setUpThus(ArrayList<Thu>thus,String hanName,String wayWrite,boolean contained,
                                    String anotherForm,String meaning, String cheatingMeaning,ArrayList<Thu>component){
         Thu thu = new Thu(hanName,wayWrite,contained,anotherForm,meaning,cheatingMeaning);
@@ -393,6 +426,8 @@ public class DataKanji {
         Collections.addAll(thus,getAllData(Nihongrade10()));
         Collections.addAll(thus,getAllData(Nihongrade11()));
         Collections.addAll(thus,getAllData(Nihongrade12()));
+        Collections.addAll(thus,getAllData(NihonGrade13()));
+        Collections.addAll(thus,getAllData(Usual()));
         return thus;
     }
 }
